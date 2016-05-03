@@ -235,16 +235,6 @@ public struct IVRSystem
 	[MarshalAs(UnmanagedType.FunctionPtr)]
 	internal _AcknowledgeQuit_UserPrompt AcknowledgeQuit_UserPrompt;
 
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void _PerformanceTestEnableCapture(bool bEnable);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _PerformanceTestEnableCapture PerformanceTestEnableCapture;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void _PerformanceTestReportFidelityLevelChange(int nFidelityLevel);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _PerformanceTestReportFidelityLevelChange PerformanceTestReportFidelityLevelChange;
-
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -304,6 +294,11 @@ public struct IVRApplications
 	internal delegate EVRApplicationError _LaunchApplication(string pchAppKey);
 	[MarshalAs(UnmanagedType.FunctionPtr)]
 	internal _LaunchApplication LaunchApplication;
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+	internal delegate EVRApplicationError _LaunchTemplateApplication(string pchTemplateAppKey, string pchNewAppKey, [In, Out] AppOverrideKeys_t[] pKeys, uint unKeys);
+	[MarshalAs(UnmanagedType.FunctionPtr)]
+	internal _LaunchTemplateApplication LaunchTemplateApplication;
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 	internal delegate EVRApplicationError _LaunchDashboardOverlay(string pchAppKey);
@@ -726,6 +721,16 @@ public struct IVROverlay
 	internal _GetOverlayErrorNameFromEnum GetOverlayErrorNameFromEnum;
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+	internal delegate EVROverlayError _SetOverlayRenderingPid(ulong ulOverlayHandle, uint unPID);
+	[MarshalAs(UnmanagedType.FunctionPtr)]
+	internal _SetOverlayRenderingPid SetOverlayRenderingPid;
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+	internal delegate uint _GetOverlayRenderingPid(ulong ulOverlayHandle);
+	[MarshalAs(UnmanagedType.FunctionPtr)]
+	internal _GetOverlayRenderingPid GetOverlayRenderingPid;
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 	internal delegate EVROverlayError _SetOverlayFlag(ulong ulOverlayHandle, VROverlayFlags eOverlayFlag, bool bEnabled);
 	[MarshalAs(UnmanagedType.FunctionPtr)]
 	internal _SetOverlayFlag SetOverlayFlag;
@@ -929,6 +934,16 @@ public struct IVROverlay
 	internal delegate EVROverlayError _SetOverlayFromFile(ulong ulOverlayHandle, string pchFilePath);
 	[MarshalAs(UnmanagedType.FunctionPtr)]
 	internal _SetOverlayFromFile SetOverlayFromFile;
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+	internal delegate EVROverlayError _GetOverlayTexture(ulong ulOverlayHandle, ref IntPtr pNativeTextureHandle, IntPtr pNativeTextureRef, ref uint pWidth, ref uint pHeight, ref uint pNativeFormat, ref EGraphicsAPIConvention pAPI, ref EColorSpace pColorSpace);
+	[MarshalAs(UnmanagedType.FunctionPtr)]
+	internal _GetOverlayTexture GetOverlayTexture;
+
+	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+	internal delegate EVROverlayError _ReleaseNativeOverlayHandle(ulong ulOverlayHandle, IntPtr pNativeTextureHandle);
+	[MarshalAs(UnmanagedType.FunctionPtr)]
+	internal _ReleaseNativeOverlayHandle ReleaseNativeOverlayHandle;
 
 	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 	internal delegate EVROverlayError _CreateDashboardOverlay(string pchOverlayKey, string pchOverlayFriendlyName, ref ulong pMainHandle, ref ulong pThumbnailHandle);
@@ -1154,131 +1169,6 @@ public struct IVRSettings
 	internal delegate void _RemoveKeyInSection(string pchSection, string pchSettingsKey, ref EVRSettingsError peError);
 	[MarshalAs(UnmanagedType.FunctionPtr)]
 	internal _RemoveKeyInSection RemoveKeyInSection;
-
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public struct IVRTrackedCamera
-{
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _HasCamera(uint nDeviceIndex);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _HasCamera HasCamera;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _GetCameraFirmwareDescription(uint nDeviceIndex, string pBuffer, uint nBufferLen);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _GetCameraFirmwareDescription GetCameraFirmwareDescription;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _GetCameraFrameDimensions(uint nDeviceIndex, ECameraVideoStreamFormat nVideoStreamFormat, ref uint pWidth, ref uint pHeight);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _GetCameraFrameDimensions GetCameraFrameDimensions;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _SetCameraVideoStreamFormat(uint nDeviceIndex, ECameraVideoStreamFormat nVideoStreamFormat);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _SetCameraVideoStreamFormat SetCameraVideoStreamFormat;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate ECameraVideoStreamFormat _GetCameraVideoStreamFormat(uint nDeviceIndex);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _GetCameraVideoStreamFormat GetCameraVideoStreamFormat;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _EnableCameraForStreaming(uint nDeviceIndex, bool bEnable);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _EnableCameraForStreaming EnableCameraForStreaming;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _StartVideoStream(uint nDeviceIndex);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _StartVideoStream StartVideoStream;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _StopVideoStream(uint nDeviceIndex);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _StopVideoStream StopVideoStream;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _IsVideoStreamActive(uint nDeviceIndex, ref bool pbPaused, ref float pflElapsedTime);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _IsVideoStreamActive IsVideoStreamActive;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate IntPtr _GetVideoStreamFrame(uint nDeviceIndex);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _GetVideoStreamFrame GetVideoStreamFrame;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _ReleaseVideoStreamFrame(uint nDeviceIndex, ref CameraVideoStreamFrame_t pFrameImage);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _ReleaseVideoStreamFrame ReleaseVideoStreamFrame;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _SetAutoExposure(uint nDeviceIndex, bool bEnable);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _SetAutoExposure SetAutoExposure;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _PauseVideoStream(uint nDeviceIndex);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _PauseVideoStream PauseVideoStream;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _ResumeVideoStream(uint nDeviceIndex);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _ResumeVideoStream ResumeVideoStream;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _GetCameraDistortion(uint nDeviceIndex, float flInputU, float flInputV, ref float pflOutputU, ref float pflOutputV);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _GetCameraDistortion GetCameraDistortion;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _GetCameraProjection(uint nDeviceIndex, float flWidthPixels, float flHeightPixels, float flZNear, float flZFar, ref HmdMatrix44_t pProjection);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _GetCameraProjection GetCameraProjection;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _GetRecommendedCameraUndistortion(uint nDeviceIndex, ref uint pUndistortionWidthPixels, ref uint pUndistortionHeightPixels);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _GetRecommendedCameraUndistortion GetRecommendedCameraUndistortion;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _SetCameraUndistortion(uint nDeviceIndex, uint nUndistortionWidthPixels, uint nUndistortionHeightPixels);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _SetCameraUndistortion SetCameraUndistortion;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void _RequestVideoServicesForTool();
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _RequestVideoServicesForTool RequestVideoServicesForTool;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void _ReleaseVideoServicesForTool();
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _ReleaseVideoServicesForTool ReleaseVideoServicesForTool;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _GetVideoStreamFrameSharedTextureGL(bool bUndistorted, ref uint pglTextureId, IntPtr pglSharedTextureHandle);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _GetVideoStreamFrameSharedTextureGL GetVideoStreamFrameSharedTextureGL;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate bool _ReleaseVideoStreamFrameSharedTextureGL(uint glTextureId, IntPtr glSharedTextureHandle);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _ReleaseVideoStreamFrameSharedTextureGL ReleaseVideoStreamFrameSharedTextureGL;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void _LockSharedTextureGL(IntPtr glSharedTextureHandle, ref CameraVideoStreamFrame_t pFrameImage);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _LockSharedTextureGL LockSharedTextureGL;
-
-	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-	internal delegate void _UnlockSharedTextureGL(IntPtr glSharedTextureHandle);
-	[MarshalAs(UnmanagedType.FunctionPtr)]
-	internal _UnlockSharedTextureGL UnlockSharedTextureGL;
 
 }
 
@@ -1509,14 +1399,6 @@ public class CVRSystem
 	{
 		FnTable.AcknowledgeQuit_UserPrompt();
 	}
-	public void PerformanceTestEnableCapture(bool bEnable)
-	{
-		FnTable.PerformanceTestEnableCapture(bEnable);
-	}
-	public void PerformanceTestReportFidelityLevelChange(int nFidelityLevel)
-	{
-		FnTable.PerformanceTestReportFidelityLevelChange(nFidelityLevel);
-	}
 }
 
 
@@ -1592,6 +1474,11 @@ public class CVRApplications
 	public EVRApplicationError LaunchApplication(string pchAppKey)
 	{
 		EVRApplicationError result = FnTable.LaunchApplication(pchAppKey);
+		return result;
+	}
+	public EVRApplicationError LaunchTemplateApplication(string pchTemplateAppKey,string pchNewAppKey,AppOverrideKeys_t [] pKeys)
+	{
+		EVRApplicationError result = FnTable.LaunchTemplateApplication(pchTemplateAppKey,pchNewAppKey,pKeys,(uint) pKeys.Length);
 		return result;
 	}
 	public EVRApplicationError LaunchDashboardOverlay(string pchAppKey)
@@ -2031,6 +1918,16 @@ public class CVROverlay
 		IntPtr result = FnTable.GetOverlayErrorNameFromEnum(error);
 		return (string) Marshal.PtrToStructure(result, typeof(string));
 	}
+	public EVROverlayError SetOverlayRenderingPid(ulong ulOverlayHandle,uint unPID)
+	{
+		EVROverlayError result = FnTable.SetOverlayRenderingPid(ulOverlayHandle,unPID);
+		return result;
+	}
+	public uint GetOverlayRenderingPid(ulong ulOverlayHandle)
+	{
+		uint result = FnTable.GetOverlayRenderingPid(ulOverlayHandle);
+		return result;
+	}
 	public EVROverlayError SetOverlayFlag(ulong ulOverlayHandle,VROverlayFlags eOverlayFlag,bool bEnabled)
 	{
 		EVROverlayError result = FnTable.SetOverlayFlag(ulOverlayHandle,eOverlayFlag,bEnabled);
@@ -2244,6 +2141,19 @@ public class CVROverlay
 	public EVROverlayError SetOverlayFromFile(ulong ulOverlayHandle,string pchFilePath)
 	{
 		EVROverlayError result = FnTable.SetOverlayFromFile(ulOverlayHandle,pchFilePath);
+		return result;
+	}
+	public EVROverlayError GetOverlayTexture(ulong ulOverlayHandle,ref IntPtr pNativeTextureHandle,IntPtr pNativeTextureRef,ref uint pWidth,ref uint pHeight,ref uint pNativeFormat,ref EGraphicsAPIConvention pAPI,ref EColorSpace pColorSpace)
+	{
+		pWidth = 0;
+		pHeight = 0;
+		pNativeFormat = 0;
+		EVROverlayError result = FnTable.GetOverlayTexture(ulOverlayHandle,ref pNativeTextureHandle,pNativeTextureRef,ref pWidth,ref pHeight,ref pNativeFormat,ref pAPI,ref pColorSpace);
+		return result;
+	}
+	public EVROverlayError ReleaseNativeOverlayHandle(ulong ulOverlayHandle,IntPtr pNativeTextureHandle)
+	{
+		EVROverlayError result = FnTable.ReleaseNativeOverlayHandle(ulOverlayHandle,pNativeTextureHandle);
 		return result;
 	}
 	public EVROverlayError CreateDashboardOverlay(string pchOverlayKey,string pchOverlayFriendlyName,ref ulong pMainHandle,ref ulong pThumbnailHandle)
@@ -2479,141 +2389,6 @@ public class CVRSettings
 }
 
 
-public class CVRTrackedCamera
-{
-	IVRTrackedCamera FnTable;
-	internal CVRTrackedCamera(IntPtr pInterface)
-	{
-		FnTable = (IVRTrackedCamera)Marshal.PtrToStructure(pInterface, typeof(IVRTrackedCamera));
-	}
-	public bool HasCamera(uint nDeviceIndex)
-	{
-		bool result = FnTable.HasCamera(nDeviceIndex);
-		return result;
-	}
-	public bool GetCameraFirmwareDescription(uint nDeviceIndex,string pBuffer,uint nBufferLen)
-	{
-		bool result = FnTable.GetCameraFirmwareDescription(nDeviceIndex,pBuffer,nBufferLen);
-		return result;
-	}
-	public bool GetCameraFrameDimensions(uint nDeviceIndex,ECameraVideoStreamFormat nVideoStreamFormat,ref uint pWidth,ref uint pHeight)
-	{
-		pWidth = 0;
-		pHeight = 0;
-		bool result = FnTable.GetCameraFrameDimensions(nDeviceIndex,nVideoStreamFormat,ref pWidth,ref pHeight);
-		return result;
-	}
-	public bool SetCameraVideoStreamFormat(uint nDeviceIndex,ECameraVideoStreamFormat nVideoStreamFormat)
-	{
-		bool result = FnTable.SetCameraVideoStreamFormat(nDeviceIndex,nVideoStreamFormat);
-		return result;
-	}
-	public ECameraVideoStreamFormat GetCameraVideoStreamFormat(uint nDeviceIndex)
-	{
-		ECameraVideoStreamFormat result = FnTable.GetCameraVideoStreamFormat(nDeviceIndex);
-		return result;
-	}
-	public bool EnableCameraForStreaming(uint nDeviceIndex,bool bEnable)
-	{
-		bool result = FnTable.EnableCameraForStreaming(nDeviceIndex,bEnable);
-		return result;
-	}
-	public bool StartVideoStream(uint nDeviceIndex)
-	{
-		bool result = FnTable.StartVideoStream(nDeviceIndex);
-		return result;
-	}
-	public bool StopVideoStream(uint nDeviceIndex)
-	{
-		bool result = FnTable.StopVideoStream(nDeviceIndex);
-		return result;
-	}
-	public bool IsVideoStreamActive(uint nDeviceIndex,ref bool pbPaused,ref float pflElapsedTime)
-	{
-		pbPaused = false;
-		pflElapsedTime = 0;
-		bool result = FnTable.IsVideoStreamActive(nDeviceIndex,ref pbPaused,ref pflElapsedTime);
-		return result;
-	}
-	public CameraVideoStreamFrame_t GetVideoStreamFrame(uint nDeviceIndex)
-	{
-		IntPtr result = FnTable.GetVideoStreamFrame(nDeviceIndex);
-		return (CameraVideoStreamFrame_t) Marshal.PtrToStructure(result, typeof(CameraVideoStreamFrame_t));
-	}
-	public bool ReleaseVideoStreamFrame(uint nDeviceIndex,ref CameraVideoStreamFrame_t pFrameImage)
-	{
-		bool result = FnTable.ReleaseVideoStreamFrame(nDeviceIndex,ref pFrameImage);
-		return result;
-	}
-	public bool SetAutoExposure(uint nDeviceIndex,bool bEnable)
-	{
-		bool result = FnTable.SetAutoExposure(nDeviceIndex,bEnable);
-		return result;
-	}
-	public bool PauseVideoStream(uint nDeviceIndex)
-	{
-		bool result = FnTable.PauseVideoStream(nDeviceIndex);
-		return result;
-	}
-	public bool ResumeVideoStream(uint nDeviceIndex)
-	{
-		bool result = FnTable.ResumeVideoStream(nDeviceIndex);
-		return result;
-	}
-	public bool GetCameraDistortion(uint nDeviceIndex,float flInputU,float flInputV,ref float pflOutputU,ref float pflOutputV)
-	{
-		pflOutputU = 0;
-		pflOutputV = 0;
-		bool result = FnTable.GetCameraDistortion(nDeviceIndex,flInputU,flInputV,ref pflOutputU,ref pflOutputV);
-		return result;
-	}
-	public bool GetCameraProjection(uint nDeviceIndex,float flWidthPixels,float flHeightPixels,float flZNear,float flZFar,ref HmdMatrix44_t pProjection)
-	{
-		bool result = FnTable.GetCameraProjection(nDeviceIndex,flWidthPixels,flHeightPixels,flZNear,flZFar,ref pProjection);
-		return result;
-	}
-	public bool GetRecommendedCameraUndistortion(uint nDeviceIndex,ref uint pUndistortionWidthPixels,ref uint pUndistortionHeightPixels)
-	{
-		pUndistortionWidthPixels = 0;
-		pUndistortionHeightPixels = 0;
-		bool result = FnTable.GetRecommendedCameraUndistortion(nDeviceIndex,ref pUndistortionWidthPixels,ref pUndistortionHeightPixels);
-		return result;
-	}
-	public bool SetCameraUndistortion(uint nDeviceIndex,uint nUndistortionWidthPixels,uint nUndistortionHeightPixels)
-	{
-		bool result = FnTable.SetCameraUndistortion(nDeviceIndex,nUndistortionWidthPixels,nUndistortionHeightPixels);
-		return result;
-	}
-	public void RequestVideoServicesForTool()
-	{
-		FnTable.RequestVideoServicesForTool();
-	}
-	public void ReleaseVideoServicesForTool()
-	{
-		FnTable.ReleaseVideoServicesForTool();
-	}
-	public bool GetVideoStreamFrameSharedTextureGL(bool bUndistorted,ref uint pglTextureId,IntPtr pglSharedTextureHandle)
-	{
-		pglTextureId = 0;
-		bool result = FnTable.GetVideoStreamFrameSharedTextureGL(bUndistorted,ref pglTextureId,pglSharedTextureHandle);
-		return result;
-	}
-	public bool ReleaseVideoStreamFrameSharedTextureGL(uint glTextureId,IntPtr glSharedTextureHandle)
-	{
-		bool result = FnTable.ReleaseVideoStreamFrameSharedTextureGL(glTextureId,glSharedTextureHandle);
-		return result;
-	}
-	public void LockSharedTextureGL(IntPtr glSharedTextureHandle,ref CameraVideoStreamFrame_t pFrameImage)
-	{
-		FnTable.LockSharedTextureGL(glSharedTextureHandle,ref pFrameImage);
-	}
-	public void UnlockSharedTextureGL(IntPtr glSharedTextureHandle)
-	{
-		FnTable.UnlockSharedTextureGL(glSharedTextureHandle);
-	}
-}
-
-
 public class OpenVRInterop
 {
 	[DllImportAttribute("openvr_api", EntryPoint = "VR_InitInternal")]
@@ -2745,6 +2520,7 @@ public enum ETrackedDeviceProperty
 	Prop_DisplayBootloaderVersion_Uint64 = 2030,
 	Prop_DisplayHardwareVersion_Uint64 = 2031,
 	Prop_AudioFirmwareVersion_Uint64 = 2032,
+	Prop_CameraCompatibilityMode_Int32 = 2033,
 	Prop_AttachedDeviceId_String = 3000,
 	Prop_SupportedButtons_Uint64 = 3001,
 	Prop_Axis0Type_Int32 = 3002,
@@ -2835,6 +2611,7 @@ public enum EVREventType
 	VREvent_HideKeyboard = 510,
 	VREvent_OverlayGamepadFocusGained = 511,
 	VREvent_OverlayGamepadFocusLost = 512,
+	VREvent_OverlaySharedTextureChanged = 513,
 	VREvent_Notification_Shown = 600,
 	VREvent_Notification_Hidden = 601,
 	VREvent_Notification_BeginInteraction = 602,
@@ -3050,6 +2827,7 @@ public enum EVRApplicationError
 	LaunchInProgress = 111,
 	OldApplicationQuitting = 112,
 	TransitionAborted = 113,
+	IsTemplate = 114,
 	BufferTooSmall = 200,
 	PropertyNotSet = 201,
 	UnknownProperty = 202,
@@ -3067,6 +2845,8 @@ public enum EVRApplicationProperty
 	ImagePath_String = 52,
 	Source_String = 53,
 	IsDashboardOverlay_Bool = 60,
+	IsTemplate_Bool = 61,
+	IsInstanced_Bool = 62,
 	LastLaunchTime_Uint64 = 70,
 }
 public enum EVRApplicationTransitionState
@@ -3193,14 +2973,6 @@ public enum EVRSettingsError
 	IPCFailed = 1,
 	WriteFailed = 2,
 	ReadFailed = 3,
-}
-public enum ECameraVideoStreamFormat
-{
-	CVS_FORMAT_UNKNOWN = 0,
-	CVS_FORMAT_RAW10 = 1,
-	CVS_FORMAT_NV12 = 2,
-	CVS_FORMAT_RGB24 = 3,
-	CVS_MAX_FORMATS = 4,
 }
 
 [StructLayout(LayoutKind.Explicit)] public struct VREvent_Data_t
@@ -3460,6 +3232,11 @@ public enum ECameraVideoStreamFormat
 	public float gridScale;
 	public HmdMatrix44_t transform;
 }
+[StructLayout(LayoutKind.Sequential)] public struct AppOverrideKeys_t
+{
+	public IntPtr pchKey; // const char *
+	public IntPtr pchValue; // const char *
+}
 [StructLayout(LayoutKind.Sequential)] public struct Compositor_FrameTiming
 {
 	public uint m_nSize;
@@ -3537,36 +3314,6 @@ public enum ECameraVideoStreamFormat
 	public int height;
 	public int depth;
 }
-[StructLayout(LayoutKind.Sequential)] public struct CameraVideoStreamFrame_t
-{
-	public ECameraVideoStreamFormat m_nStreamFormat;
-	public uint m_nWidth;
-	public uint m_nHeight;
-	public uint m_nImageDataSize;
-	public uint m_nFrameSequence;
-	public uint m_nBufferIndex;
-	public uint m_nBufferCount;
-	public uint m_nExposureTime;
-	public uint m_nISPFrameTimeStamp;
-	public uint m_nISPReferenceTimeStamp;
-	public uint m_nSyncCounter;
-	public uint m_nCamSyncEvents;
-	public double m_flReferenceCamSyncTime;
-	public double m_flFrameElapsedTime;
-	public double m_flFrameDeliveryRate;
-	public double m_flFrameCaptureTime_DriverAbsolute;
-	public double m_flFrameCaptureTime_ServerRelative;
-	public ulong m_nFrameCaptureTicks_ServerAbsolute;
-	public double m_flFrameCaptureTime_ClientRelative;
-	[MarshalAs(UnmanagedType.I1)]
-	public bool m_bPoseIsValid;
-	public HmdMatrix34_t m_matDeviceToAbsoluteTracking;
-	public float m_Pad0; //float[4]
-	public float m_Pad1;
-	public float m_Pad2;
-	public float m_Pad3;
-	public IntPtr m_pImageData; // void *
-}
 [StructLayout(LayoutKind.Sequential)] public struct COpenVRContext
 {
 	public IntPtr m_pVRSystem; // class vr::IVRSystem *
@@ -3631,17 +3378,17 @@ public class OpenVR
 	public const uint k_unMaxPropertyStringSize = 32768;
 	public const uint k_unControllerStateAxisCount = 5;
 	public const ulong k_ulOverlayHandleInvalid = 0;
-	public const string IVRSystem_Version = "IVRSystem_011";
+	public const string IVRSystem_Version = "IVRSystem_012";
 	public const string IVRExtendedDisplay_Version = "IVRExtendedDisplay_001";
 	public const uint k_unMaxApplicationKeyLength = 128;
-	public const string IVRApplications_Version = "IVRApplications_004";
+	public const string IVRApplications_Version = "IVRApplications_005";
 	public const string IVRChaperone_Version = "IVRChaperone_003";
 	public const string IVRChaperoneSetup_Version = "IVRChaperoneSetup_005";
 	public const string IVRCompositor_Version = "IVRCompositor_013";
 	public const uint k_unVROverlayMaxKeyLength = 128;
 	public const uint k_unVROverlayMaxNameLength = 128;
 	public const uint k_unMaxOverlayCount = 32;
-	public const string IVROverlay_Version = "IVROverlay_010";
+	public const string IVROverlay_Version = "IVROverlay_011";
 	public const string k_pch_Controller_Component_GDC2015 = "gdc2015";
 	public const string k_pch_Controller_Component_Base = "base";
 	public const string k_pch_Controller_Component_Tip = "tip";
@@ -3676,6 +3423,7 @@ public class OpenVR
 	public const string k_pch_SteamVR_UsingSpeakers_Bool = "usingSpeakers";
 	public const string k_pch_SteamVR_SpeakersForwardYawOffsetDegrees_Float = "speakersForwardYawOffsetDegrees";
 	public const string k_pch_SteamVR_BaseStationPowerManagement_Bool = "basestationPowerManagement";
+	public const string k_pch_SteamVR_NeverKillProcesses_Bool = "neverKillProcesses";
 	public const string k_pch_Lighthouse_Section = "driver_lighthouse";
 	public const string k_pch_Lighthouse_DisableIMU_Bool = "disableimu";
 	public const string k_pch_Lighthouse_UseDisambiguation_String = "usedisambiguation";
@@ -3722,7 +3470,6 @@ public class OpenVR
 	public const string k_pch_audio_OffPlaybackDevice_String = "offPlaybackDevice";
 	public const string k_pch_audio_OffRecordDevice_String = "offRecordDevice";
 	public const string k_pch_audio_VIVEHDMIGain = "viveHDMIGain";
-	public const string IVRTrackedCamera_Version = "IVRTrackedCamera_001";
 
 	static uint VRToken { get; set; }
 
