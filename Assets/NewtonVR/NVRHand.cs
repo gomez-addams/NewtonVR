@@ -190,7 +190,7 @@ namespace NewtonVR
         }
 
 
-        public void TriggerHapticPulse(ushort durationMicroSec = 500, EVRButtonId buttonId = EVRButtonId.k_EButton_SteamVR_Touchpad)
+        public void TriggerHapticPulse(ushort durationMicroSec = 500, EVRButtonId buttonId = EVRButtonId.k_EButton_Axis0)
         {
             if (Controller != null)
             {
@@ -205,12 +205,12 @@ namespace NewtonVR
             }
         }
 
-        public void LongHapticPulse(float seconds, EVRButtonId buttonId = EVRButtonId.k_EButton_SteamVR_Touchpad)
+        public void LongHapticPulse(float seconds, EVRButtonId buttonId = EVRButtonId.k_EButton_Axis0)
         {
             StartCoroutine(DoLongHapticPulse(seconds, buttonId));
         }
 
-        private IEnumerator DoLongHapticPulse(float seconds, EVRButtonId buttonId = EVRButtonId.k_EButton_SteamVR_Touchpad)
+        private IEnumerator DoLongHapticPulse(float seconds, EVRButtonId buttonId = EVRButtonId.k_EButton_Axis0)
         {
             float startTime = Time.time;
             float endTime = startTime + seconds;
@@ -588,6 +588,8 @@ namespace NewtonVR
             if (Rigidbody == null)
                 Rigidbody = this.gameObject.AddComponent<Rigidbody>();
             Rigidbody.isKinematic = true;
+            Rigidbody.maxAngularVelocity = float.MaxValue;
+            Rigidbody.useGravity = false;
 
             Collider[] Colliders = null;
 
