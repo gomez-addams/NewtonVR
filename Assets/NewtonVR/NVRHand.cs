@@ -82,6 +82,7 @@ namespace NewtonVR
 
         protected virtual void Awake()
         {
+            
             CurrentlyHoveringOver = new Dictionary<NVRInteractable, Dictionary<Collider, float>>();
 
             LastPositions = new Vector3[EstimationSamples];
@@ -499,6 +500,12 @@ namespace NewtonVR
 
         protected virtual void OnEnable()
         {
+            VisibilityLocked = false;
+
+            if (CustomModel != null)
+            {
+                this.GetComponentInChildren<SteamVR_RenderModel>().enabled = false;
+            }
             if (this.gameObject.activeInHierarchy)
                 StartCoroutine(DoInitialize());
         }
@@ -668,6 +675,7 @@ namespace NewtonVR
             }
             else if (RenderModelInitialized == false)
             {
+
                 RenderModelInitialized = true;
                 GameObject CustomModelObject = GameObject.Instantiate(CustomModel);
                 Colliders = CustomModelObject.GetComponentsInChildren<Collider>(); //note: these should be trigger colliders
@@ -682,13 +690,28 @@ namespace NewtonVR
 
             if (NVRPlayer.Instance.PhysicalHands == true)
             {
+                bool InitialState = false;
+
                 if (PhysicalController != null)
                 {
+                    if (PhysicalController.State == true)
+                    {
+                        InitialState = true;
+                    }
+                    else
+                    {
+                        InitialState = false;
+                    }
                     PhysicalController.Kill();
                 }
 
                 PhysicalController = this.gameObject.AddComponent<NVRPhysicalController>();
-                PhysicalController.Initialize(this, false);
+                PhysicalController.Initialize(this, InitialState);
+
+                if (InitialState == true)
+                {
+                    ForceGhost();
+                }
 
                 Color transparentcolor = Color.white;
                 transparentcolor.a = (float)VisibilityLevel.Ghost / 100f;
@@ -750,6 +773,22 @@ namespace NewtonVR
         {
             SteamVR_Utils.Event.Remove("render_model_loaded", RenderModelLoaded);
             SteamVR_Utils.Event.Remove("new_poses_applied", OnNewPosesApplied);
+        }
+
+        public void GetDeviceVelocity(out Vector3 velocity, out Vector3 angularVelocity)
+        {
+            velocity = Controller.velocity;
+            angularVelocity = Controller.angularVelocity;
+        }
+
+        public Vector3 GetDeviceVelocity()
+        {
+            return Controller.velocity;
+        }
+
+        public Vector3 GetDeviceAngularVelocity()
+        {
+            return Controller.angularVelocity;
         }
     }
     

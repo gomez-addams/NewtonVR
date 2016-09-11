@@ -1,4 +1,4 @@
-﻿//========= Copyright 2014, Valve Corporation, All rights reserved. ===========
+﻿//======= Copyright (c) Valve Corporation, All rights reserved. ===============
 //
 // Purpose: Utilities for working with SteamVR
 //
@@ -405,6 +405,150 @@ public static class SteamVR_Utils
 			OpenVR.Shutdown();
 
 		return result;
+	}
+
+	public static void TakeStereoScreenshot(uint screenshotHandle, GameObject target, int cellSize, float ipd, ref string previewFilename, ref string VRFilename)
+	{
+		const int width = 4096;
+		const int height = width / 2;
+		const int halfHeight = height / 2;
+
+		var texture = new Texture2D(width, height * 2, TextureFormat.ARGB32, false);
+
+		var timer = new System.Diagnostics.Stopwatch();
+
+		Camera tempCamera = null;
+
+		timer.Start();
+
+		var camera = target.GetComponent<Camera>();
+		if (camera == null)
+		{
+			if (tempCamera == null)
+				tempCamera = new GameObject().AddComponent<Camera>();
+			camera = tempCamera;
+		}
+
+		// Render preview texture
+		const int previewWidth = 2048;
+		const int previewHeight = 2048;
+		var previewTexture = new Texture2D(previewWidth, previewHeight, TextureFormat.ARGB32, false);
+		var targetPreviewTexture = new RenderTexture(previewWidth, previewHeight, 24);
+
+		var oldTargetTexture = camera.targetTexture;
+		var oldOrthographic = camera.orthographic;
+		var oldFieldOfView = camera.fieldOfView;
+		var oldAspect = camera.aspect;
+		var oldstereoTargetEye = camera.stereoTargetEye;
+		camera.stereoTargetEye = StereoTargetEyeMask.None;
+		camera.fieldOfView = 60.0f;
+		camera.orthographic = false;
+		camera.targetTexture = targetPreviewTexture;
+		camera.aspect = 1.0f;
+		camera.Render();
+
+		// copy preview texture
+		RenderTexture.active = targetPreviewTexture;
+		previewTexture.ReadPixels(new Rect(0, 0, targetPreviewTexture.width, targetPreviewTexture.height), 0, 0);
+		RenderTexture.active = null;
+		camera.targetTexture = null;
+		Object.DestroyImmediate(targetPreviewTexture);
+
+		var fx = camera.gameObject.AddComponent<SteamVR_SphericalProjection>();
+
+		var oldPosition = target.transform.localPosition;
+		var oldRotation = target.transform.localRotation;
+		var basePosition = target.transform.position;
+		var baseRotation = Quaternion.Euler(0, target.transform.rotation.eulerAngles.y, 0);
+
+		var transform = camera.transform;
+
+		int vTotal = halfHeight / cellSize;
+		float dv = 90.0f / vTotal; // vertical degrees per segment
+		float dvHalf = dv / 2.0f;
+
+		var targetTexture = new RenderTexture(cellSize, cellSize, 24);
+		targetTexture.wrapMode = TextureWrapMode.Clamp;
+		targetTexture.antiAliasing = 8;
+
+		camera.fieldOfView = dv;
+		camera.orthographic = false;
+		camera.targetTexture = targetTexture;
+		camera.aspect = oldAspect;
+		camera.stereoTargetEye = StereoTargetEyeMask.None;
+
+		// Render sections of a sphere using a rectilinear projection
+		// and resample using a sphereical projection into a single panorama
+		// texture per eye.  We break into sections in order to keep the eye
+		// separation similar around the sphere.  Rendering alternates between
+		// top and bottom sections, sweeping horizontally around the sphere,
+		// alternating left and right eyes.
+		for (int v = 0; v < vTotal; v++)
+		{
+			var pitch = 90.0f - (v * dv) - dvHalf;
+			var uTotal = width / targetTexture.width;
+			var du = 360.0f / uTotal; // horizontal degrees per segment
+			var duHalf = du / 2.0f;
+
+			var vTarget = v * halfHeight / vTotal;
+
+			for (int i = 0; i < 2; i++) // top, bottom
+			{
+				if (i == 1)
+				{
+					pitch = -pitch;
+					vTarget = height - vTarget - cellSize;
+				}
+
+				for (int u = 0; u < uTotal; u++)
+				{
+					var yaw = -180.0f + (u * du) + duHalf;
+
+					var uTarget = u * width / uTotal;
+
+					var vTargetOffset = 0;
+					var xOffset = -ipd / 2 * Mathf.Cos(pitch * Mathf.Deg2Rad);
+
+					for (int j = 0; j < 2; j++) // left, right
+					{
+						if (j == 1)
+						{
+							vTargetOffset = height;
+							xOffset = -xOffset;
+						}
+
+						var offset = baseRotation * Quaternion.Euler(0, yaw, 0) * new Vector3(xOffset, 0, 0);
+						transform.position = basePosition + offset;
+
+						var direction = Quaternion.Euler(pitch, yaw, 0.0f);
+						transform.rotation = baseRotation * direction;
+
+		return result;
+	}
+
+	public static void QueueEventOnRenderThread(int eventID)
+	{
+#if (UNITY_5_0 || UNITY_5_1)
+		GL.IssuePluginEvent(eventID);
+#elif (UNITY_5_2 || UNITY_5_3)
+		GL.IssuePluginEvent(SteamVR.Unity.GetRenderEventFunc(), eventID);
+#endif
+	}
+}
+
+		Object.DestroyImmediate(targetTexture);
+		Object.DestroyImmediate(fx);
+
+		timer.Stop();
+		Debug.Log(string.Format("Screenshot took {0} seconds.", timer.Elapsed));
+
+		if (tempCamera != null)
+		{
+			Object.DestroyImmediate(tempCamera.gameObject);
+		}
+
+		Object.DestroyImmediate(previewTexture);
+		Object.DestroyImmediate(texture);
 	}
 }
 
