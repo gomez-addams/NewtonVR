@@ -64,6 +64,10 @@ namespace NewtonVR
 
         private EVRButtonId[] EVRButtonIds;
 
+        public delegate void SampleButtonDelegate(NVRHand controller);
+        public SampleButtonDelegate SampleHoldButton;
+        public SampleButtonDelegate SampleUseButton;
+
         public bool IsHovering
         {
             get
@@ -135,15 +139,29 @@ namespace NewtonVR
                 button.Value.IsTouched = Controller.GetTouch(button.Key);
             }
 
-            HoldButtonPressed = Inputs[HoldButton].IsPressed;
-            HoldButtonDown = Inputs[HoldButton].PressDown;
-            HoldButtonUp = Inputs[HoldButton].PressUp;
-            HoldButtonAxis = Inputs[HoldButton].SingleAxis;
+            if (null != SampleHoldButton)
+            {
+                SampleHoldButton(this);
+            }
+            else
+            {
+                HoldButtonPressed = Inputs[HoldButton].IsPressed;
+                HoldButtonDown = Inputs[HoldButton].PressDown;
+                HoldButtonUp = Inputs[HoldButton].PressUp;
+                HoldButtonAxis = Inputs[HoldButton].SingleAxis;
+            }
 
-            UseButtonPressed = Inputs[UseButton].IsPressed;
-            UseButtonDown = Inputs[UseButton].PressDown;
-            UseButtonUp = Inputs[UseButton].PressUp;
-            UseButtonAxis = Inputs[UseButton].SingleAxis;
+            if (null != SampleUseButton)
+            {
+                SampleUseButton(this);
+            }
+            else
+            {
+                UseButtonPressed = Inputs[UseButton].IsPressed;
+                UseButtonDown = Inputs[UseButton].PressDown;
+                UseButtonUp = Inputs[UseButton].PressUp;
+                UseButtonAxis = Inputs[UseButton].SingleAxis;
+            }
 
             if (CurrentInteractionStyle == InterationStyle.GripDownToInteract)
             {
