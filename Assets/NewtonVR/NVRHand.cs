@@ -287,6 +287,7 @@ namespace NewtonVR
                 UseButtonUp = Inputs[UseButton].PressUp;
                 UseButtonAxis = Inputs[UseButton].SingleAxis;
             }
+        }
 
         protected void UpdateInteractions()
         {
