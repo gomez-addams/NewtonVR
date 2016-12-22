@@ -60,6 +60,7 @@ namespace NewtonVR
                 AudioPool[CurrentPoolIndex].pitch = Random.Range(1 - NVRCollisionSoundController.Instance.PitchModulationRange, 1 + NVRCollisionSoundController.Instance.PitchModulationRange);
             }
 
+            AudioPool[CurrentPoolIndex].transform.position = position;
             AudioPool[CurrentPoolIndex].volume = impactVolume;
             AudioPool[CurrentPoolIndex].clip = GetClip(material);
             AudioPool[CurrentPoolIndex].Play();
@@ -80,7 +81,7 @@ namespace NewtonVR
                 Debug.LogError("[NewtonVR] CollisionSound: Trying to play sound for material without a clip. Need a clip at: " + CollisionSoundsPath + "/" + material.ToString());
             }
 
-            int index = Random.Range(0, Clips[material].Count - 1);
+            int index = Random.Range(0, Clips[material].Count);
 
             return Clips[material][index];
         }

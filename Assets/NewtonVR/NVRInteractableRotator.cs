@@ -16,10 +16,8 @@ namespace NewtonVR
             this.Rigidbody.maxAngularVelocity = 100f;
         }
 
-        public override void OnNewPosesApplied()
+        protected virtual void FixedUpdate()
         {
-            base.OnNewPosesApplied();
-
             if (IsAttached == true)
             {
                 Vector3 PositionDelta = (AttachedHand.transform.position - InitialAttachPoint.position) * DeltaMagic;
@@ -27,7 +25,7 @@ namespace NewtonVR
                 this.Rigidbody.AddForceAtPosition(PositionDelta, InitialAttachPoint.position, ForceMode.VelocityChange);
             }
 
-            CurrentAngle = this.transform.localEulerAngles.z;
+            CurrentAngle = Quaternion.Angle(Quaternion.identity, this.transform.rotation);
         }
 
         public override void BeginInteraction(NVRHand hand)
@@ -35,13 +33,10 @@ namespace NewtonVR
             base.BeginInteraction(hand);
 
             InitialAttachPoint = new GameObject(string.Format("[{0}] InitialAttachPoint", this.gameObject.name)).transform;
-            //InitialAttachPoint = GameObject.CreatePrimitive(PrimitiveType.Cube).transform;
             InitialAttachPoint.position = hand.transform.position;
             InitialAttachPoint.rotation = hand.transform.rotation;
             InitialAttachPoint.localScale = Vector3.one * 0.25f;
             InitialAttachPoint.parent = this.transform;
-
-            ClosestHeldPoint = (InitialAttachPoint.position - this.transform.position);
         }
 
         public override void EndInteraction()
@@ -50,15 +45,6 @@ namespace NewtonVR
 
             if (InitialAttachPoint != null)
                 Destroy(InitialAttachPoint.gameObject);
-        }
-
-        protected override void DropIfTooFar()
-        {
-            float distance = Vector3.Distance(AttachedHand.transform.position, (this.transform.position + ClosestHeldPoint));
-            if (distance > DropDistance)
-            {
-                DroppedBecauseOfDistance();
-            }
         }
 
     }

@@ -523,18 +523,99 @@ public static class SteamVR_Utils
 						var direction = Quaternion.Euler(pitch, yaw, 0.0f);
 						transform.rotation = baseRotation * direction;
 
-		return result;
-	}
+						// vector pointing to center of this section
+						var N = direction * Vector3.forward;
 
-	public static void QueueEventOnRenderThread(int eventID)
-	{
-#if (UNITY_5_0 || UNITY_5_1)
-		GL.IssuePluginEvent(eventID);
-#elif (UNITY_5_2 || UNITY_5_3)
-		GL.IssuePluginEvent(SteamVR.Unity.GetRenderEventFunc(), eventID);
-#endif
-	}
-}
+						// horizontal span of this section in degrees
+						var phi0 = yaw - (du / 2);
+						var phi1 = phi0 + du;
+
+						// vertical span of this section in degrees
+						var theta0 = pitch + (dv / 2);
+						var theta1 = theta0 - dv;
+
+						var midPhi = (phi0 + phi1) / 2;
+						var baseTheta = Mathf.Abs(theta0) < Mathf.Abs(theta1) ? theta0 : theta1;
+
+						// vectors pointing to corners of image closes to the equator
+						var V00 = Quaternion.Euler(baseTheta, phi0, 0.0f) * Vector3.forward;
+						var V01 = Quaternion.Euler(baseTheta, phi1, 0.0f) * Vector3.forward;
+
+						// vectors pointing to top and bottom midsection of image
+						var V0M = Quaternion.Euler(theta0, midPhi, 0.0f) * Vector3.forward;
+						var V1M = Quaternion.Euler(theta1, midPhi, 0.0f) * Vector3.forward;
+
+						// intersection points for each of the above
+						var P00 = V00 / Vector3.Dot(V00, N);
+						var P01 = V01 / Vector3.Dot(V01, N);
+						var P0M = V0M / Vector3.Dot(V0M, N);
+						var P1M = V1M / Vector3.Dot(V1M, N);
+
+						// calculate basis vectors for plane
+						var P00_P01 = P01 - P00;
+						var P0M_P1M = P1M - P0M;
+
+						var uMag = P00_P01.magnitude;
+						var vMag = P0M_P1M.magnitude;
+
+						var uScale = 1.0f / uMag;
+						var vScale = 1.0f / vMag;
+
+						var uAxis = P00_P01 * uScale;
+						var vAxis = P0M_P1M * vScale;
+
+						// update material constant buffer
+						fx.Set(N, phi0, phi1, theta0, theta1,
+							uAxis, P00, uScale,
+							vAxis, P0M, vScale);
+
+						camera.aspect = uMag / vMag;
+						camera.Render();
+
+						RenderTexture.active = targetTexture;
+						texture.ReadPixels(new Rect(0, 0, targetTexture.width, targetTexture.height), uTarget, vTarget + vTargetOffset);
+						RenderTexture.active = null;                 
+					}
+
+					// Update progress
+					var progress = (float)( v * ( uTotal * 2.0f ) + u + i*uTotal) / (float)(vTotal * ( uTotal * 2.0f ) );
+					OpenVR.Screenshots.UpdateScreenshotProgress(screenshotHandle, progress);
+				}
+			}
+		}
+
+		// 100% flush
+		OpenVR.Screenshots.UpdateScreenshotProgress(screenshotHandle, 1.0f);
+
+		// Save textures to disk.
+		// Add extensions
+		previewFilename += ".png";
+		VRFilename += ".png";
+
+		// Preview
+		previewTexture.Apply();
+		System.IO.File.WriteAllBytes(previewFilename, previewTexture.EncodeToPNG());
+
+		// VR
+		texture.Apply();
+		System.IO.File.WriteAllBytes(VRFilename, texture.EncodeToPNG());
+
+		// Cleanup.
+		if (camera != tempCamera)
+		{
+			camera.targetTexture = oldTargetTexture;
+			camera.orthographic = oldOrthographic;
+			camera.fieldOfView = oldFieldOfView;
+			camera.aspect = oldAspect;
+			camera.stereoTargetEye = oldstereoTargetEye;
+
+			target.transform.localPosition = oldPosition;
+			target.transform.localRotation = oldRotation;
+		}
+		else
+		{
+			tempCamera.targetTexture = null;
+		}
 
 		Object.DestroyImmediate(targetTexture);
 		Object.DestroyImmediate(fx);
